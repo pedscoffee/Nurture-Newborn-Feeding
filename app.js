@@ -237,7 +237,7 @@ function renderEvents() {
         let classes = 'feed-item';
         
         if (event.category === 'feed') {
-            icon = '🍼';
+            icon = '🤱';
             let details = [event.type];
             if (event.amount) details.push(`${event.amount}ml`);
             if (event.duration) details.push(`${event.duration}m`);
@@ -245,9 +245,9 @@ function renderEvents() {
             info = details.join(' • ');
         } else if (event.category === 'diaper') {
             classes += ' diaper-item';
-            if (event.type === 'Wet') icon = '💧';
+            if (event.type === 'Wet') icon = '🌊';
             else if (event.type === 'Dirty') icon = '💩';
-            else icon = '💧💩'; // Both
+            else icon = '🌊💩'; // Both
             info = `${event.type} Diaper`;
         }
 
