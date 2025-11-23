@@ -5,11 +5,13 @@
 
 // --- State Management ---
 let state = {
-    feeds: [],
+    events: [], // Unified list of feeds and diapers
     settings: {
         intervalMinutes: 150, // 2.5 hours
         theme: 'dark',
-        sound: 'chime1'
+        sound: 'chime1',
+        defaultFormulaType: '',
+        defaultBreastfeedingSide: 'Both'
     },
     viewMode: 'countdown' // 'countdown' or 'stopwatch'
 };
@@ -35,7 +37,9 @@ const els = {
     inputs: {
         theme: document.getElementById('setting-theme'),
         interval: document.getElementById('setting-interval'),
-        sound: document.getElementById('setting-sound')
+        sound: document.getElementById('setting-sound'),
+        formulaType: document.getElementById('setting-formula-type'),
+        testNotify: document.getElementById('btn-test-notify')
     },
     modal: {
         overlay: document.getElementById('modal-edit'),
@@ -43,10 +47,13 @@ const els = {
         typeGroup: document.getElementById('edit-type-group'),
         typeInput: document.getElementById('edit-type'),
         amount: document.getElementById('edit-amount'),
+        duration: document.getElementById('edit-duration'),
+        formulaType: document.getElementById('edit-formula-type'),
         notes: document.getElementById('edit-notes'),
         id: document.getElementById('edit-id'),
         saveBtn: document.getElementById('btn-save-entry'),
-        delBtn: document.getElementById('btn-delete-entry')
+        delBtn: document.getElementById('btn-delete-entry'),
+        speedButtons: document.getElementById('speed-buttons')
     }
 };
 
@@ -62,9 +69,13 @@ function init() {
     applyTheme();
     setupEventListeners();
     startClock();
-    renderFeeds();
+    renderEvents();
     updateTimerDisplay();
-    requestNotificationPermission();
+    
+    // Check notification permission on load, but don't request it yet
+    if ("Notification" in window && Notification.permission === "granted") {
+        // Permission already granted
+    }
     
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js');
@@ -76,18 +87,24 @@ function loadData() {
     const stored = localStorage.getItem('nurture_data');
     if (stored) {
         const parsed = JSON.parse(stored);
-        state.feeds = parsed.feeds || [];
+        // Migration: if 'feeds' exists but 'events' doesn't, rename it
+        if (parsed.feeds && !parsed.events) {
+            state.events = parsed.feeds.map(f => ({...f, category: 'feed'}));
+        } else {
+            state.events = parsed.events || [];
+        }
         state.settings = { ...state.settings, ...parsed.settings };
     }
     // Sync settings UI
     els.inputs.theme.value = state.settings.theme;
     els.inputs.interval.value = state.settings.intervalMinutes;
     els.inputs.sound.value = state.settings.sound;
+    if(els.inputs.formulaType) els.inputs.formulaType.value = state.settings.defaultFormulaType || '';
 }
 
 function saveData() {
     localStorage.setItem('nurture_data', JSON.stringify({
-        feeds: state.feeds,
+        events: state.events,
         settings: state.settings
     }));
 }
@@ -102,13 +119,15 @@ function startClock() {
 }
 
 function updateTimerDisplay() {
-    if (state.feeds.length === 0) {
+    const feeds = state.events.filter(e => e.category === 'feed');
+    
+    if (feeds.length === 0) {
         els.mainDisplay.textContent = "--:--";
         els.subDisplay.textContent = "No feeds recorded yet";
         return;
     }
 
-    const lastFeed = state.feeds[0]; // Feeds are sorted DESC
+    const lastFeed = feeds[0]; // Events are sorted DESC
     const lastTime = new Date(lastFeed.timestamp).getTime();
     const now = Date.now();
     const intervalMs = state.settings.intervalMinutes * 60 * 1000;
@@ -122,7 +141,6 @@ function updateTimerDisplay() {
             els.mainDisplay.textContent = "00:00";
             els.mainDisplay.style.color = "var(--danger-color)";
             els.subDisplay.textContent = "Feed Overdue";
-            // Trigger alarm logic if exactly hitting 0 happens in background (handled largely by notifications)
         } else {
             els.mainDisplay.textContent = formatMs(diff);
             els.mainDisplay.style.color = "var(--text-primary)";
@@ -169,14 +187,17 @@ function startFeed() {
     const newFeed = {
         id: Date.now().toString(),
         timestamp: now.toISOString(),
-        type: 'Left', // Default
+        category: 'feed',
+        type: state.settings.defaultBreastfeedingSide || 'Both',
         amount: '',
+        duration: '',
+        formulaType: state.settings.defaultFormulaType || '',
         notes: ''
     };
 
-    state.feeds.unshift(newFeed); // Add to beginning
+    state.events.unshift(newFeed); // Add to beginning
     saveData();
-    renderFeeds();
+    renderEvents();
     updateTimerDisplay();
     
     // Random Encouragement
@@ -186,29 +207,63 @@ function startFeed() {
     alarmTriggered = false;
 }
 
-// --- Rendering Feeds ---
-function renderFeeds() {
-    // Sort Descending
-    state.feeds.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+function logDiaper(type) {
+    const now = new Date();
+    const newDiaper = {
+        id: Date.now().toString(),
+        timestamp: now.toISOString(),
+        category: 'diaper',
+        type: type, // 'Wet', 'Dirty', 'Both'
+        notes: ''
+    };
     
-    const html = state.feeds.map(feed => {
-        const date = new Date(feed.timestamp);
+    state.events.unshift(newDiaper);
+    saveData();
+    renderEvents();
+}
+
+// --- Rendering Events ---
+function renderEvents() {
+    // Sort Descending
+    state.events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    const html = state.events.map(event => {
+        const date = new Date(event.timestamp);
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const dateStr = date.toLocaleDateString();
-        const info = [feed.type, feed.amount ? `${feed.amount}ml` : null].filter(Boolean).join(' • ');
+        
+        let icon = '';
+        let info = '';
+        let classes = 'feed-item';
+        
+        if (event.category === 'feed') {
+            icon = '🍼';
+            let details = [event.type];
+            if (event.amount) details.push(`${event.amount}ml`);
+            if (event.duration) details.push(`${event.duration}m`);
+            if (event.type === 'Formula' && event.formulaType) details.push(event.formulaType);
+            info = details.join(' • ');
+        } else if (event.category === 'diaper') {
+            classes += ' diaper-item';
+            if (event.type === 'Wet') icon = '💧';
+            else if (event.type === 'Dirty') icon = '💩';
+            else icon = '💧💩'; // Both
+            info = `${event.type} Diaper`;
+        }
 
         return `
-            <li class="feed-item" onclick="openEditModal('${feed.id}')">
+            <li class="${classes}" onclick="openEditModal('${event.id}')">
+                <div class="feed-icon">${icon}</div>
                 <div class="feed-info">
                     <h4>${timeStr} <span style="font-weight:400; opacity:0.7; font-size:0.8em">(${dateStr})</span></h4>
-                    <p>${info} ${feed.notes ? '• 📝' : ''}</p>
+                    <p>${info} ${event.notes ? '• 📝' : ''}</p>
                 </div>
                 <button class="feed-edit-btn">Edit</button>
             </li>
         `;
     }).join('');
 
-    els.feedListPreview.innerHTML = html; // Show all in preview for now, or slice(0,5)
+    els.feedListPreview.innerHTML = html; 
     els.feedListFull.innerHTML = html;
     
     renderStats();
@@ -216,48 +271,100 @@ function renderFeeds() {
 
 // --- Stats ---
 function renderStats() {
-    if (!state.feeds.length) return;
+    if (!state.events.length) return;
 
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
     
+    const feeds = state.events.filter(e => e.category === 'feed');
+    const diapers = state.events.filter(e => e.category === 'diaper');
+    
     // Feeds last 24h
-    const feeds24h = state.feeds.filter(f => (now - new Date(f.timestamp).getTime()) < oneDay);
+    const feeds24h = feeds.filter(f => (now - new Date(f.timestamp).getTime()) < oneDay);
     document.getElementById('stat-count-24').textContent = feeds24h.length;
 
-    // Avg Interval
-    if (state.feeds.length > 1) {
+    // Avg Interval (Feeds)
+    if (feeds.length > 1) {
         let totalDiff = 0;
         let count = 0;
-        for(let i = 0; i < Math.min(state.feeds.length - 1, 10); i++) {
-            const t1 = new Date(state.feeds[i].timestamp);
-            const t2 = new Date(state.feeds[i+1].timestamp);
+        for(let i = 0; i < Math.min(feeds.length - 1, 10); i++) {
+            const t1 = new Date(feeds[i].timestamp);
+            const t2 = new Date(feeds[i+1].timestamp);
             totalDiff += (t1 - t2);
             count++;
         }
         const avgMs = totalDiff / count;
         const avgHrs = (avgMs / (1000 * 60 * 60)).toFixed(1);
         document.getElementById('stat-avg-time').textContent = `${avgHrs}h`;
+    } else {
+        document.getElementById('stat-avg-time').textContent = '--';
+    }
+    
+    // Diaper Stats (24h)
+    const diapers24h = diapers.filter(d => (now - new Date(d.timestamp).getTime()) < oneDay);
+    const wetCount = diapers24h.filter(d => d.type === 'Wet' || d.type === 'Both').length;
+    const dirtyCount = diapers24h.filter(d => d.type === 'Dirty' || d.type === 'Both').length;
+    
+    if(document.getElementById('stat-wet-24')) {
+        document.getElementById('stat-wet-24').textContent = wetCount;
+        document.getElementById('stat-dirty-24').textContent = dirtyCount;
     }
 }
 
 // --- Modals & Editing ---
 function openEditModal(id) {
-    const feed = state.feeds.find(f => f.id === id);
-    if (!feed) return;
+    const event = state.events.find(f => f.id === id);
+    if (!event) return;
 
-    els.modal.id.value = feed.id;
+    els.modal.id.value = event.id;
     // Format datetime-local: YYYY-MM-DDThh:mm
-    const d = new Date(feed.timestamp);
+    const d = new Date(event.timestamp);
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     els.modal.time.value = d.toISOString().slice(0,16);
     
-    els.modal.typeInput.value = feed.type || 'Left';
-    updateChipUI(feed.type || 'Left');
-    els.modal.amount.value = feed.amount || '';
-    els.modal.notes.value = feed.notes || '';
+    els.modal.typeInput.value = event.type || 'Left';
+    updateChipUI(event.type || 'Left');
+    
+    els.modal.notes.value = event.notes || '';
+    
+    // Show/Hide fields based on category
+    const feedFields = document.querySelectorAll('.feed-only');
+    const formulaFields = document.querySelectorAll('.formula-only');
+    
+    if (event.category === 'feed') {
+        feedFields.forEach(el => el.classList.remove('hidden'));
+        els.modal.amount.value = event.amount || '';
+        els.modal.duration.value = event.duration || '';
+        els.modal.formulaType.value = event.formulaType || '';
+        
+        // Show formula fields only if type is Formula
+        if (event.type === 'Formula') {
+            formulaFields.forEach(el => el.classList.remove('hidden'));
+        } else {
+            formulaFields.forEach(el => el.classList.add('hidden'));
+        }
+        
+        // Update chips for Feed
+        renderTypeChips(['Left', 'Right', 'Both', 'Bottle', 'Formula']);
+        
+    } else {
+        // Diaper
+        feedFields.forEach(el => el.classList.add('hidden'));
+        formulaFields.forEach(el => el.classList.add('hidden'));
+        
+        // Update chips for Diaper
+        renderTypeChips(['Wet', 'Dirty', 'Both']);
+    }
+    
+    updateChipUI(event.type);
     
     els.modal.overlay.classList.remove('hidden');
+}
+
+function renderTypeChips(types) {
+    els.modal.typeGroup.innerHTML = types.map(t => 
+        `<button class="chip" data-val="${t}">${t}</button>`
+    ).join('');
 }
 
 function closeEditModal() {
@@ -266,27 +373,34 @@ function closeEditModal() {
 
 function saveEdit() {
     const id = els.modal.id.value;
-    const idx = state.feeds.findIndex(f => f.id === id);
+    const idx = state.events.findIndex(f => f.id === id);
     if (idx > -1) {
-        state.feeds[idx] = {
-            ...state.feeds[idx],
+        const current = state.events[idx];
+        const updates = {
             timestamp: new Date(els.modal.time.value).toISOString(),
             type: els.modal.typeInput.value,
-            amount: els.modal.amount.value,
             notes: els.modal.notes.value
         };
+        
+        if (current.category === 'feed') {
+            updates.amount = els.modal.amount.value;
+            updates.duration = els.modal.duration.value;
+            updates.formulaType = els.modal.formulaType.value;
+        }
+        
+        state.events[idx] = { ...current, ...updates };
         saveData();
-        renderFeeds();
+        renderEvents();
         closeEditModal();
     }
 }
 
 function deleteEntry() {
-    if(!confirm("Delete this feed?")) return;
+    if(!confirm("Delete this entry?")) return;
     const id = els.modal.id.value;
-    state.feeds = state.feeds.filter(f => f.id !== id);
+    state.events = state.events.filter(f => f.id !== id);
     saveData();
-    renderFeeds();
+    renderEvents();
     closeEditModal();
 }
 
@@ -297,6 +411,16 @@ function updateChipUI(val) {
         else c.classList.remove('selected');
     });
     els.modal.typeInput.value = val;
+    
+    // Toggle formula fields if needed
+    const formulaFields = document.querySelectorAll('.formula-only');
+    if (val === 'Formula') {
+        formulaFields.forEach(el => el.classList.remove('hidden'));
+        // Pre-fill if empty
+        if (!els.modal.formulaType.value) els.modal.formulaType.value = state.settings.defaultFormulaType || '';
+    } else {
+        formulaFields.forEach(el => el.classList.add('hidden'));
+    }
 }
 
 function showView(viewName) {
@@ -311,7 +435,6 @@ function applyTheme() {
 }
 
 // --- Audio (Web Audio API Synthesis) ---
-// This removes dependency on external MP3 files
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
@@ -326,7 +449,6 @@ function playChime(type) {
     const now = audioCtx.currentTime;
     
     if (type === 'chime1') {
-        // Soft sine wave
         osc.type = 'sine';
         osc.frequency.setValueAtTime(440, now);
         osc.frequency.exponentialRampToValueAtTime(880, now + 0.5);
@@ -335,7 +457,6 @@ function playChime(type) {
         osc.start(now);
         osc.stop(now + 1.5);
     } else if (type === 'chime2') {
-        // Bell-like triangle
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(600, now);
         gain.gain.setValueAtTime(0.1, now);
@@ -343,7 +464,6 @@ function playChime(type) {
         osc.start(now);
         osc.stop(now + 2);
     } else {
-        // Harp-ish
         osc.type = 'sine';
         osc.frequency.setValueAtTime(300, now);
         osc.frequency.linearRampToValueAtTime(500, now + 0.1);
@@ -357,18 +477,41 @@ function playChime(type) {
 
 // --- Notifications ---
 function requestNotificationPermission() {
-    if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
+    if (!("Notification" in window)) {
+        alert("This browser does not support desktop notifications");
+        return;
     }
+    
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            new Notification("Notifications Enabled", {
+                body: "You will now receive feeding reminders.",
+                icon: 'icons/icon-192.png'
+            });
+        } else {
+            alert("Notifications were denied. Please enable them in your browser settings.");
+        }
+    });
 }
 
 function sendNotification() {
     if (Notification.permission === "granted") {
         const intervalHr = (state.settings.intervalMinutes / 60).toFixed(1);
-        new Notification("Time to Feed!", {
-            body: `${intervalHr} hours have passed since the last feed.`,
-            icon: 'icons/icon-192.png'
-        });
+        
+        // Try Service Worker registration first for mobile support
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'notify',
+                title: "Time to Feed!",
+                body: `${intervalHr} hours have passed since the last feed.`
+            });
+        } else {
+            // Fallback to standard API
+            new Notification("Time to Feed!", {
+                body: `${intervalHr} hours have passed since the last feed.`,
+                icon: 'icons/icon-192.png'
+            });
+        }
     }
 }
 
@@ -393,6 +536,18 @@ function setupEventListeners() {
     els.btnSettings.onclick = () => showView('settings');
     els.btnStats.onclick = () => showView('stats');
     
+    // Diaper Buttons (Delegation or direct if added dynamically, but better to bind if they exist)
+    // Note: These will be added to HTML next, so we bind them here assuming existence or use delegation
+    document.body.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-diaper')) {
+            const type = e.target.closest('.btn-diaper').dataset.type;
+            logDiaper(type);
+        }
+        if (e.target.classList.contains('speed-btn')) {
+            els.modal.duration.value = e.target.dataset.val;
+        }
+    });
+    
     // Modal actions
     els.modal.saveBtn.onclick = saveEdit;
     els.modal.delBtn.onclick = deleteEntry;
@@ -415,19 +570,36 @@ function setupEventListeners() {
         state.settings.sound = e.target.value;
         saveData();
     };
+    if(els.inputs.formulaType) {
+        els.inputs.formulaType.onchange = (e) => {
+            state.settings.defaultFormulaType = e.target.value;
+            saveData();
+        };
+    }
+    
+    if(els.inputs.testNotify) {
+        els.inputs.testNotify.onclick = () => {
+            if (Notification.permission !== 'granted') {
+                requestNotificationPermission();
+            } else {
+                sendNotification();
+            }
+        };
+    }
+    
     document.getElementById('btn-test-sound').onclick = () => playChime(state.settings.sound);
     document.getElementById('btn-clear-data').onclick = () => {
         if(confirm("Delete ALL history? This cannot be undone.")) {
-            state.feeds = [];
+            state.events = [];
             saveData();
-            renderFeeds();
+            renderEvents();
         }
     };
     document.getElementById('btn-export').onclick = () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.feeds));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.events));
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "feed_history.json");
+        downloadAnchorNode.setAttribute("download", "nurture_history.json");
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();

@@ -32,11 +32,17 @@
             <div id="encouragement" class="encouragement">You're doing a great job!</div>
 
             <button id="btn-start-feed" class="btn-primary">Start Feed</button>
+            
+            <div class="diaper-actions">
+                <button class="btn-diaper" data-type="Wet" aria-label="Log Wet Diaper">💧 Wet</button>
+                <button class="btn-diaper" data-type="Dirty" aria-label="Log Dirty Diaper">💩 Dirty</button>
+                <button class="btn-diaper" data-type="Both" aria-label="Log Both Diaper">💧💩 Both</button>
+            </div>
         </div>
 
         <section class="history-preview">
             <div class="section-header">
-                <h3>Recent Feeds</h3>
+                <h3>Recent Activity</h3>
                 <button id="btn-view-stats" class="text-link">History & Stats</button>
             </div>
             <ul id="feed-list-preview" class="feed-list">
@@ -51,12 +57,20 @@
         </div>
         <div class="stats-grid">
             <div class="stat-card">
-                <span class="stat-label">Last 24h</span>
+                <span class="stat-label">Feeds (24h)</span>
                 <span id="stat-count-24" class="stat-value">0</span>
             </div>
             <div class="stat-card">
                 <span class="stat-label">Avg Interval</span>
                 <span id="stat-avg-time" class="stat-value">--</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Wet (24h)</span>
+                <span id="stat-wet-24" class="stat-value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Dirty (24h)</span>
+                <span id="stat-dirty-24" class="stat-value">0</span>
             </div>
         </div>
         <button id="btn-export" class="btn-secondary" style="margin: 1rem 0; width: 100%;">Export Data (JSON)</button>
@@ -95,8 +109,14 @@
                     <option value="chime3">Harp</option>
                 </select>
             </label>
+            
+            <label>
+                Default Formula Type
+                <input type="text" id="setting-formula-type" placeholder="e.g. Similac, Enfamil">
+            </label>
 
             <button id="btn-test-sound" class="btn-small">Test Sound</button>
+            <button id="btn-test-notify" class="btn-small" style="margin-top: 0.5rem;">Test Notification</button>
             
             <hr>
             
@@ -106,7 +126,7 @@
 
     <div id="modal-edit" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3>Edit Feed</h3>
+            <h3>Edit Entry</h3>
             <input type="hidden" id="edit-id">
             
             <label>Time</label>
@@ -114,15 +134,30 @@
 
             <label>Type</label>
             <div class="chip-group" id="edit-type-group">
-                <button class="chip" data-val="Left">Left</button>
-                <button class="chip" data-val="Right">Right</button>
-                <button class="chip" data-val="Bottle">Bottle</button>
-                <button class="chip" data-val="Formula">Formula</button>
+                <!-- Populated by JS -->
             </div>
             <input type="hidden" id="edit-type">
 
-            <label>Amount (ml) - Optional</label>
-            <input type="number" id="edit-amount" placeholder="ml">
+            <div class="feed-only">
+                <label>Duration (min)</label>
+                <div class="speed-buttons" id="speed-buttons">
+                    <button class="speed-btn" data-val="5">5</button>
+                    <button class="speed-btn" data-val="10">10</button>
+                    <button class="speed-btn" data-val="15">15</button>
+                    <button class="speed-btn" data-val="20">20</button>
+                    <button class="speed-btn" data-val="25">25</button>
+                    <button class="speed-btn" data-val="30">30</button>
+                </div>
+                <input type="number" id="edit-duration" placeholder="Minutes">
+
+                <label>Amount (ml) - Optional</label>
+                <input type="number" id="edit-amount" placeholder="ml">
+            </div>
+            
+            <div class="formula-only hidden">
+                <label>Formula Type</label>
+                <input type="text" id="edit-formula-type" placeholder="Brand/Type">
+            </div>
 
             <label>Notes</label>
             <textarea id="edit-notes" rows="2"></textarea>

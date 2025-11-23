@@ -219,6 +219,71 @@ select:focus, input:focus { border-color: var(--accent-color); outline: none; }
 }
 .chip.selected { background: rgba(137, 180, 250, 0.2); color: var(--accent-color); border-color: var(--accent-color); }
 
+/* Diaper Actions */
+.diaper-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 1.5rem;
+}
+.btn-diaper {
+    flex: 1;
+    background: var(--surface-color);
+    color: var(--text-primary);
+    padding: 12px;
+    border-radius: 16px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btn-diaper:active { background: var(--surface-color); filter: brightness(1.2); transform: scale(0.98); }
+
+/* Speed Buttons */
+.speed-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+.speed-btn {
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    flex: 1;
+    min-width: 40px;
+}
+.speed-btn:active { background: var(--accent-color); color: var(--bg-color); }
+
+/* List Item Enhancements */
+.feed-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.diaper-item { border-left: 3px solid var(--accent-secondary); }
+.feed-item { border-left: 3px solid var(--accent-color); }
+
+.btn-small {
+    background: var(--surface-color);
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    width: 100%;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
 /* Animations */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
