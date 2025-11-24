@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icon-192.png" alt="Nurture Logo" width="120" height="120">
+  <img src="icon.png" alt="Nurture Logo" width="120" height="120">
 </p>
 
 <h1 align="center">Nurture</h1>
