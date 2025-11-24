@@ -426,9 +426,9 @@ function updateChipUI(val) {
 
 function showView(viewName) {
     Object.values(els.views).forEach(el => el.classList.add('hidden'));
-    if (viewName === 'home') els.views.home.classList.remove('hidden');
-    if (viewName === 'stats') els.views.stats.classList.remove('hidden');
-    if (viewName === 'settings') els.views.settings.classList.remove('hidden');
+    if (els.views[viewName]) {
+        els.views[viewName].classList.remove('hidden');
+    }
 }
 
 function applyTheme() {

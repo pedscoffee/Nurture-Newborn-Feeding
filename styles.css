@@ -556,12 +556,6 @@ input:focus {
     max-width: 450px;
 }
 
-.onboarding-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    animation: bounce 2s infinite;
-}
-
 .onboarding-content h2 {
     font-size: 1.8rem;
     margin-bottom: 0.5rem;
