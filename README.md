@@ -25,7 +25,7 @@
 
 ## Features
 
-### 🍼 Feeding Timer
+### Feeding Timer
 - **Countdown Mode** — See exactly how long until the next scheduled feed
 - **Stopwatch Mode** — Track how long since the last feed
 - **Customizable Intervals** — Set feeding schedules from 2 to 4 hours
@@ -59,7 +59,8 @@
 ## Installation
 
 ### Option 1: Use Online
-Simply visit the hosted version and add it to your home screen:
+Simply visit the hosted version and add it to your home screen: https://pedscoffee.github.io/Nurture-Newborn-Feeding/
+
 1. Open the app in your mobile browser
 2. Tap the browser menu (⋮ or Share icon)
 3. Select "Add to Home Screen" or "Install App"
@@ -68,7 +69,7 @@ Simply visit the hosted version and add it to your home screen:
 Clone the repository and serve the files:
 
 ```bash
-git clone https://github.com/pedscoffee/nurture.git
+git clone https://github.com/pedscoffee/nurture-newborn-feeding.git
 cd nurture
 ```
 
@@ -137,9 +138,8 @@ nurture/
 ├── app.js              # Application logic and state management
 ├── service-worker.js   # PWA caching and offline support
 ├── manifest.json       # PWA configuration
-├── icons/
-│   ├── icon-192.png    # App icon (192x192)
-│   └── icon-512.png    # App icon (512x512)
+├── icon-192.png    # App icon (192x192)
+├── icon-512.png    # App icon (512x512)
 ├── LICENSE             # MIT License
 └── README.md           # This file
 ```
@@ -162,7 +162,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <p align="center">
-  Made with 💜 for sleep-deprived parents everywhere
+  By a sleep-deprived parent for sleep-deprived parents
 </p>
 
 <p align="center">
