@@ -606,6 +606,64 @@ function setupEventListeners() {
         downloadAnchorNode.remove();
     };
 
+    document.getElementById('btn-import').onclick = () => {
+        document.getElementById('file-import').click();
+    };
+
+    document.getElementById('file-import').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+
+                // Basic Validation
+                if (!Array.isArray(importedData) && !importedData.events) {
+                    alert("Invalid file format. Expected Nurture JSON export.");
+                    return;
+                }
+
+                // Handle both old array format and new object format
+                let newEvents = [];
+                if (Array.isArray(importedData)) {
+                    newEvents = importedData;
+                } else {
+                    newEvents = importedData.events || [];
+                    // Merge settings if present? Let's stick to events for now to avoid overwriting preferences unexpectedly, 
+                    // or maybe ask? For simplicity, let's just import events.
+                }
+
+                if (confirm(`Found ${newEvents.length} entries. Merge with existing data?`)) {
+                    // Merge Strategy: Add only if ID doesn't exist
+                    let addedCount = 0;
+                    const existingIds = new Set(state.events.map(e => e.id));
+
+                    newEvents.forEach(evt => {
+                        if (!existingIds.has(evt.id)) {
+                            state.events.push(evt);
+                            existingIds.add(evt.id);
+                            addedCount++;
+                        }
+                    });
+
+                    state.events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    saveData();
+                    renderEvents();
+                    updateTimerDisplay();
+                    alert(`Import successful! Added ${addedCount} new entries.`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error parsing file. Please ensure it is a valid JSON file.");
+            }
+            // Reset input
+            e.target.value = '';
+        };
+        reader.readAsText(file);
+    };
+
     // How-to Link
     document.getElementById('btn-howto-link').onclick = () => showView('howto');
 
