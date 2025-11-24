@@ -32,7 +32,8 @@ const els = {
     views: {
         home: document.getElementById('view-home'),
         stats: document.getElementById('view-stats'),
-        settings: document.getElementById('view-settings')
+        settings: document.getElementById('view-settings'),
+        howto: document.getElementById('view-howto')
     },
     inputs: {
         theme: document.getElementById('setting-theme'),
@@ -71,12 +72,12 @@ function init() {
     startClock();
     renderEvents();
     updateTimerDisplay();
-    
+
     // Check notification permission on load, but don't request it yet
     if ("Notification" in window && Notification.permission === "granted") {
         // Permission already granted
     }
-    
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js');
     }
@@ -89,7 +90,7 @@ function loadData() {
         const parsed = JSON.parse(stored);
         // Migration: if 'feeds' exists but 'events' doesn't, rename it
         if (parsed.feeds && !parsed.events) {
-            state.events = parsed.feeds.map(f => ({...f, category: 'feed'}));
+            state.events = parsed.feeds.map(f => ({ ...f, category: 'feed' }));
         } else {
             state.events = parsed.events || [];
         }
@@ -99,7 +100,7 @@ function loadData() {
     els.inputs.theme.value = state.settings.theme;
     els.inputs.interval.value = state.settings.intervalMinutes;
     els.inputs.sound.value = state.settings.sound;
-    if(els.inputs.formulaType) els.inputs.formulaType.value = state.settings.defaultFormulaType || '';
+    if (els.inputs.formulaType) els.inputs.formulaType.value = state.settings.defaultFormulaType || '';
 }
 
 function saveData() {
@@ -120,7 +121,7 @@ function startClock() {
 
 function updateTimerDisplay() {
     const feeds = state.events.filter(e => e.category === 'feed');
-    
+
     if (feeds.length === 0) {
         els.mainDisplay.textContent = "--:--";
         els.subDisplay.textContent = "No feeds recorded yet";
@@ -135,7 +136,7 @@ function updateTimerDisplay() {
 
     if (state.viewMode === 'countdown') {
         const diff = nextFeedTime - now;
-        
+
         if (diff <= 0) {
             // Overdue
             els.mainDisplay.textContent = "00:00";
@@ -144,9 +145,9 @@ function updateTimerDisplay() {
         } else {
             els.mainDisplay.textContent = formatMs(diff);
             els.mainDisplay.style.color = "var(--text-primary)";
-            els.subDisplay.textContent = `Due at ${new Date(nextFeedTime).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+            els.subDisplay.textContent = `Due at ${new Date(nextFeedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
         }
-        
+
         checkAlarm(diff);
 
     } else {
@@ -154,7 +155,7 @@ function updateTimerDisplay() {
         const diff = now - lastTime;
         els.mainDisplay.textContent = formatMs(diff);
         els.mainDisplay.style.color = "var(--text-primary)";
-        els.subDisplay.textContent = `Last feed: ${new Date(lastTime).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+        els.subDisplay.textContent = `Last feed: ${new Date(lastTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
 }
 
@@ -199,10 +200,10 @@ function startFeed() {
     saveData();
     renderEvents();
     updateTimerDisplay();
-    
+
     // Random Encouragement
     els.encouragement.textContent = messages[Math.floor(Math.random() * messages.length)];
-    
+
     // Reset alarm state
     alarmTriggered = false;
 }
@@ -216,7 +217,7 @@ function logDiaper(type) {
         type: type, // 'Wet', 'Dirty', 'Both'
         notes: ''
     };
-    
+
     state.events.unshift(newDiaper);
     saveData();
     renderEvents();
@@ -226,16 +227,16 @@ function logDiaper(type) {
 function renderEvents() {
     // Sort Descending
     state.events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
+
     const html = state.events.map(event => {
         const date = new Date(event.timestamp);
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const dateStr = date.toLocaleDateString();
-        
+
         let icon = '';
         let info = '';
         let classes = 'feed-item';
-        
+
         if (event.category === 'feed') {
             icon = '🤱';
             let details = [event.type];
@@ -263,9 +264,9 @@ function renderEvents() {
         `;
     }).join('');
 
-    els.feedListPreview.innerHTML = html; 
+    els.feedListPreview.innerHTML = html;
     els.feedListFull.innerHTML = html;
-    
+
     renderStats();
 }
 
@@ -275,10 +276,10 @@ function renderStats() {
 
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
-    
+
     const feeds = state.events.filter(e => e.category === 'feed');
     const diapers = state.events.filter(e => e.category === 'diaper');
-    
+
     // Feeds last 24h
     const feeds24h = feeds.filter(f => (now - new Date(f.timestamp).getTime()) < oneDay);
     document.getElementById('stat-count-24').textContent = feeds24h.length;
@@ -287,9 +288,9 @@ function renderStats() {
     if (feeds.length > 1) {
         let totalDiff = 0;
         let count = 0;
-        for(let i = 0; i < Math.min(feeds.length - 1, 10); i++) {
+        for (let i = 0; i < Math.min(feeds.length - 1, 10); i++) {
             const t1 = new Date(feeds[i].timestamp);
-            const t2 = new Date(feeds[i+1].timestamp);
+            const t2 = new Date(feeds[i + 1].timestamp);
             totalDiff += (t1 - t2);
             count++;
         }
@@ -299,13 +300,13 @@ function renderStats() {
     } else {
         document.getElementById('stat-avg-time').textContent = '--';
     }
-    
+
     // Diaper Stats (24h)
     const diapers24h = diapers.filter(d => (now - new Date(d.timestamp).getTime()) < oneDay);
     const wetCount = diapers24h.filter(d => d.type === 'Wet' || d.type === 'Both').length;
     const dirtyCount = diapers24h.filter(d => d.type === 'Dirty' || d.type === 'Both').length;
-    
-    if(document.getElementById('stat-wet-24')) {
+
+    if (document.getElementById('stat-wet-24')) {
         document.getElementById('stat-wet-24').textContent = wetCount;
         document.getElementById('stat-dirty-24').textContent = dirtyCount;
     }
@@ -320,49 +321,49 @@ function openEditModal(id) {
     // Format datetime-local: YYYY-MM-DDThh:mm
     const d = new Date(event.timestamp);
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    els.modal.time.value = d.toISOString().slice(0,16);
-    
+    els.modal.time.value = d.toISOString().slice(0, 16);
+
     els.modal.typeInput.value = event.type || 'Left';
     updateChipUI(event.type || 'Left');
-    
+
     els.modal.notes.value = event.notes || '';
-    
+
     // Show/Hide fields based on category
     const feedFields = document.querySelectorAll('.feed-only');
     const formulaFields = document.querySelectorAll('.formula-only');
-    
+
     if (event.category === 'feed') {
         feedFields.forEach(el => el.classList.remove('hidden'));
         els.modal.amount.value = event.amount || '';
         els.modal.duration.value = event.duration || '';
         els.modal.formulaType.value = event.formulaType || '';
-        
+
         // Show formula fields only if type is Formula
         if (event.type === 'Formula') {
             formulaFields.forEach(el => el.classList.remove('hidden'));
         } else {
             formulaFields.forEach(el => el.classList.add('hidden'));
         }
-        
+
         // Update chips for Feed
         renderTypeChips(['Left', 'Right', 'Both', 'Bottle', 'Formula']);
-        
+
     } else {
         // Diaper
         feedFields.forEach(el => el.classList.add('hidden'));
         formulaFields.forEach(el => el.classList.add('hidden'));
-        
+
         // Update chips for Diaper
         renderTypeChips(['Wet', 'Dirty', 'Both']);
     }
-    
+
     updateChipUI(event.type);
-    
+
     els.modal.overlay.classList.remove('hidden');
 }
 
 function renderTypeChips(types) {
-    els.modal.typeGroup.innerHTML = types.map(t => 
+    els.modal.typeGroup.innerHTML = types.map(t =>
         `<button class="chip" data-val="${t}">${t}</button>`
     ).join('');
 }
@@ -381,13 +382,13 @@ function saveEdit() {
             type: els.modal.typeInput.value,
             notes: els.modal.notes.value
         };
-        
+
         if (current.category === 'feed') {
             updates.amount = els.modal.amount.value;
             updates.duration = els.modal.duration.value;
             updates.formulaType = els.modal.formulaType.value;
         }
-        
+
         state.events[idx] = { ...current, ...updates };
         saveData();
         renderEvents();
@@ -396,7 +397,7 @@ function saveEdit() {
 }
 
 function deleteEntry() {
-    if(!confirm("Delete this entry?")) return;
+    if (!confirm("Delete this entry?")) return;
     const id = els.modal.id.value;
     state.events = state.events.filter(f => f.id !== id);
     saveData();
@@ -407,11 +408,11 @@ function deleteEntry() {
 // --- UI Helpers ---
 function updateChipUI(val) {
     document.querySelectorAll('.chip').forEach(c => {
-        if(c.dataset.val === val) c.classList.add('selected');
+        if (c.dataset.val === val) c.classList.add('selected');
         else c.classList.remove('selected');
     });
     els.modal.typeInput.value = val;
-    
+
     // Toggle formula fields if needed
     const formulaFields = document.querySelectorAll('.formula-only');
     if (val === 'Formula') {
@@ -425,9 +426,9 @@ function updateChipUI(val) {
 
 function showView(viewName) {
     Object.values(els.views).forEach(el => el.classList.add('hidden'));
-    if(viewName === 'home') els.views.home.classList.remove('hidden');
-    if(viewName === 'stats') els.views.stats.classList.remove('hidden');
-    if(viewName === 'settings') els.views.settings.classList.remove('hidden');
+    if (viewName === 'home') els.views.home.classList.remove('hidden');
+    if (viewName === 'stats') els.views.stats.classList.remove('hidden');
+    if (viewName === 'settings') els.views.settings.classList.remove('hidden');
 }
 
 function applyTheme() {
@@ -439,15 +440,15 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
 function playChime(type) {
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
     const now = audioCtx.currentTime;
-    
+
     if (type === 'chime1') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(440, now);
@@ -481,7 +482,7 @@ function requestNotificationPermission() {
         alert("This browser does not support desktop notifications");
         return;
     }
-    
+
     Notification.requestPermission().then(permission => {
         if (permission === "granted") {
             new Notification("Notifications Enabled", {
@@ -497,7 +498,7 @@ function requestNotificationPermission() {
 function sendNotification() {
     if (Notification.permission === "granted") {
         const intervalHr = (state.settings.intervalMinutes / 60).toFixed(1);
-        
+
         // Try Service Worker registration first for mobile support
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage({
@@ -535,7 +536,7 @@ function setupEventListeners() {
     els.startBtn.onclick = startFeed;
     els.btnSettings.onclick = () => showView('settings');
     els.btnStats.onclick = () => showView('stats');
-    
+
     // Diaper Buttons (Delegation or direct if added dynamically, but better to bind if they exist)
     // Note: These will be added to HTML next, so we bind them here assuming existence or use delegation
     document.body.addEventListener('click', (e) => {
@@ -547,12 +548,12 @@ function setupEventListeners() {
             els.modal.duration.value = e.target.dataset.val;
         }
     });
-    
+
     // Modal actions
     els.modal.saveBtn.onclick = saveEdit;
     els.modal.delBtn.onclick = deleteEntry;
     els.modal.typeGroup.addEventListener('click', (e) => {
-        if(e.target.classList.contains('chip')) updateChipUI(e.target.dataset.val);
+        if (e.target.classList.contains('chip')) updateChipUI(e.target.dataset.val);
     });
 
     // Settings inputs
@@ -570,14 +571,14 @@ function setupEventListeners() {
         state.settings.sound = e.target.value;
         saveData();
     };
-    if(els.inputs.formulaType) {
+    if (els.inputs.formulaType) {
         els.inputs.formulaType.onchange = (e) => {
             state.settings.defaultFormulaType = e.target.value;
             saveData();
         };
     }
-    
-    if(els.inputs.testNotify) {
+
+    if (els.inputs.testNotify) {
         els.inputs.testNotify.onclick = () => {
             if (Notification.permission !== 'granted') {
                 requestNotificationPermission();
@@ -586,10 +587,10 @@ function setupEventListeners() {
             }
         };
     }
-    
+
     document.getElementById('btn-test-sound').onclick = () => playChime(state.settings.sound);
     document.getElementById('btn-clear-data').onclick = () => {
-        if(confirm("Delete ALL history? This cannot be undone.")) {
+        if (confirm("Delete ALL history? This cannot be undone.")) {
             state.events = [];
             saveData();
             renderEvents();
@@ -604,7 +605,25 @@ function setupEventListeners() {
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
     };
+
+    // How-to Link
+    document.getElementById('btn-howto-link').onclick = () => showView('howto');
+
+    // Onboarding
+    document.getElementById('btn-finish-onboarding').onclick = () => {
+        document.getElementById('modal-onboarding').classList.add('hidden');
+        localStorage.setItem('nurture_has_visited', 'true');
+    };
+}
+
+function checkOnboarding() {
+    if (!localStorage.getItem('nurture_has_visited')) {
+        document.getElementById('modal-onboarding').classList.remove('hidden');
+    }
 }
 
 // Init App
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    checkOnboarding();
+});

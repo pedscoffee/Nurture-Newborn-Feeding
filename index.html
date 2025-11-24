@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,12 +11,18 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
+
 <body>
 
     <header class="app-header">
         <div id="live-clock" class="live-clock">00:00</div>
         <button id="btn-settings" aria-label="Settings">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+            </svg>
         </button>
     </header>
 
@@ -25,14 +32,14 @@
                 <button id="toggle-countdown" class="active">Next Feed</button>
                 <button id="toggle-stopwatch">Since Last</button>
             </div>
-            
+
             <div id="main-display" class="main-display">--:--</div>
             <div id="sub-display" class="sub-display">Due at --:--</div>
 
             <div id="encouragement" class="encouragement">You're doing a great job!</div>
 
             <button id="btn-start-feed" class="btn-primary">Start Feed</button>
-            
+
             <div class="diaper-actions">
                 <button class="btn-diaper" data-type="Wet" aria-label="Log Wet Diaper">💧 Wet</button>
                 <button class="btn-diaper" data-type="Dirty" aria-label="Log Dirty Diaper">💩 Dirty</button>
@@ -46,7 +53,7 @@
                 <button id="btn-view-stats" class="text-link">History & Stats</button>
             </div>
             <ul id="feed-list-preview" class="feed-list">
-                </ul>
+            </ul>
         </section>
     </main>
 
@@ -109,18 +116,125 @@
                     <option value="chime3">Harp</option>
                 </select>
             </label>
-            
+
             <label>
                 Default Formula Type
                 <input type="text" id="setting-formula-type" placeholder="e.g. Similac, Enfamil">
             </label>
 
+            <button id="btn-howto-link" class="btn-secondary" style="margin-top: 1rem;">📱 Set Up Timer
+                Shortcuts</button>
+
             <button id="btn-test-sound" class="btn-small">Test Sound</button>
             <button id="btn-test-notify" class="btn-small" style="margin-top: 0.5rem;">Test Notification</button>
-            
+
             <hr>
-            
+
             <button id="btn-clear-data" class="btn-danger">Clear All Data</button>
+        </div>
+    </div>
+
+    <div id="view-howto" class="view-modal hidden">
+        <div class="modal-header">
+            <h2>Timer Shortcuts</h2>
+            <button class="btn-close" onclick="showView('settings')">Back</button>
+        </div>
+        <div class="howto-content">
+            <div class="tip-box">
+                <p>We recommend using your phone’s native clock timer combined with Nurture for maximum convenience and
+                    reliability.</p>
+            </div>
+
+            <h3>iPhone</h3>
+
+            <div class="step-group">
+                <h4>Create the Shortcut</h4>
+                <ol>
+                    <li>Open the <strong>Shortcuts</strong> app</li>
+                    <li>Tap the <strong>+</strong> button (top right)</li>
+                    <li>Tap <strong>Add Action</strong></li>
+                    <li>Search for "Start Timer" and select it</li>
+                    <li>Set your desired duration (e.g., 5 minutes)</li>
+                    <li>Rename it (e.g., "Quick Timer")</li>
+                    <li>Tap <strong>Done</strong></li>
+                </ol>
+            </div>
+
+            <div class="step-group">
+                <h4>Assign to Action Button</h4>
+                <ol>
+                    <li>Open <strong>Settings</strong> > <strong>Action Button</strong></li>
+                    <li>Swipe to <strong>Shortcut</strong></li>
+                    <li>Tap <strong>Choose a Shortcut</strong> and select your timer</li>
+                </ol>
+                <p class="note">Note: Action Button is available on newer models.</p>
+            </div>
+
+            <div class="step-group">
+                <h4>Add to Home Screen</h4>
+                <ol>
+                    <li>In Shortcuts, find your timer shortcut</li>
+                    <li>Tap the three dots (•••)</li>
+                    <li>Tap the share/settings icon</li>
+                    <li>Select <strong>Add to Home Screen</strong></li>
+                </ol>
+            </div>
+
+            <h3>Android</h3>
+
+            <div class="step-group">
+                <h4>Method 1: Home Screen Widget</h4>
+                <ol>
+                    <li>Long-press empty area on home screen</li>
+                    <li>Tap <strong>Widgets</strong></li>
+                    <li>Select <strong>Clock</strong> > <strong>Timer</strong></li>
+                    <li>Drag to home screen</li>
+                </ol>
+            </div>
+
+            <div class="step-group">
+                <h4>Method 2: Quick Settings Tile</h4>
+                <ol>
+                    <li>Swipe down twice from top</li>
+                    <li>Edit (pencil icon) to add <strong>Timer</strong> tile</li>
+                    <li>Tap tile to start</li>
+                </ol>
+            </div>
+
+            <div class="step-group">
+                <h4>Method 3: Google Assistant</h4>
+                <ol>
+                    <li>Say "Set a timer for 5 minutes"</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-onboarding" class="modal-overlay hidden">
+        <div class="modal-content onboarding-content">
+            <div class="onboarding-icon">👶</div>
+            <h2>Welcome to Nurture!</h2>
+            <p>A simple, calming way to track your newborn's feeding and diapers.</p>
+
+            <div class="onboarding-steps">
+                <div class="step">
+                    <span class="icon">📱</span>
+                    <div class="text">
+                        <strong>Install as App</strong>
+                        <p>Tap Share (iOS) or Menu (Android) and select "Add to Home Screen" for the best experience.
+                        </p>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="icon">⏰</span>
+                    <div class="text">
+                        <strong>Use Native Timers</strong>
+                        <p>For reliable alarms, we recommend setting up a shortcut to your phone's native timer.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-finish-onboarding" class="btn-primary">Get Started</button>
         </div>
     </div>
 
@@ -128,7 +242,7 @@
         <div class="modal-content">
             <h3>Edit Entry</h3>
             <input type="hidden" id="edit-id">
-            
+
             <label>Time</label>
             <input type="datetime-local" id="edit-time">
 
@@ -153,7 +267,7 @@
                 <label>Amount (ml) - Optional</label>
                 <input type="number" id="edit-amount" placeholder="ml">
             </div>
-            
+
             <div class="formula-only hidden">
                 <label>Formula Type</label>
                 <input type="text" id="edit-formula-type" placeholder="Brand/Type">
@@ -174,4 +288,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>
