@@ -148,6 +148,75 @@ nurture/
 
 **Your data stays on your device.** Nurture uses `localStorage` exclusively — no data is ever sent to any server. You can export your data anytime as a JSON file for backup.
 
+---
+
+# Create a Timer Shortcut
+
+> We recommend using your phone’s native clock timer combined with Nurture Newborn Feeding for maximum convenience and reliability.
+
+## iPhone
+
+### Create the Shortcut
+
+	1.	Open the Shortcuts app
+	2.	Tap the + button (top right) to create a new shortcut
+	3.	Tap Add Action
+	4.	Search for “Start Timer” and select it
+	5.	Set your desired duration (e.g., 5 minutes)
+	6.	Tap the shortcut name at the top and rename it (e.g., “Quick Timer”)
+	7.	Tap Done
+
+#### Assign to Action Button
+
+	1.	Open Settings
+	2.	Go to Action Button
+	3.	Swipe through options until you reach Shortcut
+	4.	Tap Choose a Shortcut
+	5.	Select your timer shortcut
+	6.	Tap Done
+Now press and hold the Action Button to start your timer instantly.
+Note: The Action Button is only available on more recent models.
+
+#### Add to Home Screen
+
+	1.	Open the Shortcuts app
+	2.	Find your timer shortcut
+	3.	Tap the three dots (•••) on the shortcut
+	4.	Tap the settings icon (slider icon at top right)
+	5.	Select Add to Home Screen
+	6.	Customize the name and icon if desired
+	7.	Tap Add
+
+## Android
+
+### Method 1: Home Screen Widget (Easiest)
+
+	1.	Long-press an empty area on your home screen
+	2.	Tap Widgets
+	3.	Find and select Clock widgets
+	4.	Look for a timer widget option and drag it to your home screen
+	5.	Configure the duration if prompted
+
+### Method 2: Quick Settings Tile
+
+	1.	Swipe down twice from the top of your screen
+	2.	Look for a Timer tile
+	3.	If not visible, tap Edit (pencil icon) and add the Timer tile
+	4.	Tap the tile to quickly start a timer
+
+### Method 3: Google Assistant Quick Phrases
+
+	1.	Open the Google app
+	2.	Go to Settings > Google Assistant > Quick phrases
+	3.	Enable timer-related quick phrases
+	4.	Say “Set a timer for 5 minutes” without saying “Hey Google”
+
+Note: Features vary by Android manufacturer and version. Samsung phones have additional options through Bixby Routines and edge panels.​​​​​​​​​​​​​​​​
+
+---
+
+> Congratulations!  You’ve got this!
+
 ## Contributing
 
 Contributions are welcome! Feel free to:
